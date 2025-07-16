@@ -344,3 +344,50 @@ test(
     testSignedLEB128Error("\80\80"); // Still incomplete
   },
 );
+
+// =============================================================================
+// Infinite Precision Tests (Beyond 64-bit)
+// =============================================================================
+
+test(
+  "Unsigned LEB128: Beyond 64-bit values",
+  func() {
+    testUnsignedLEB128(18446744073709551616, "\80\80\80\80\80\80\80\80\80\02");
+    testUnsignedLEB128(36893488147419103232, "\80\80\80\80\80\80\80\80\80\04");
+    testUnsignedLEB128(1180591620717411303424, "\80\80\80\80\80\80\80\80\80\80\01");
+    testUnsignedLEB128(123456789012345678901234567890, "\D2\95\FC\F1\E4\9D\F8\B9\C3\ED\BF\C8\EE\31");
+  },
+);
+
+test(
+  "Signed LEB128: Beyond 64-bit positive values",
+  func() {
+    testSignedLEB128(9223372036854775808, "\80\80\80\80\80\80\80\80\80\01");
+    testSignedLEB128(18446744073709551616, "\80\80\80\80\80\80\80\80\80\02");
+    testSignedLEB128(123456789012345678901234567890, "\D2\95\FC\F1\E4\9D\F8\B9\C3\ED\BF\C8\EE\31");
+  },
+);
+
+test(
+  "Signed LEB128: Beyond 64-bit negative values",
+  func() {
+    testSignedLEB128(-9223372036854775809, "\FF\FF\FF\FF\FF\FF\FF\FF\FF\7E");
+    testSignedLEB128(-18446744073709551616, "\80\80\80\80\80\80\80\80\80\7E");
+    testSignedLEB128(-123456789012345678901234567890, "\AE\EA\83\8E\9B\E2\87\C6\BC\92\C0\B7\91\4E");
+  },
+);
+
+test(
+  "LEB128: Infinite precision round-trip tests",
+  func() {
+    // Test very large values round-trip correctly
+    testUnsignedLEB128Roundtrip(340282366920938463463374607431768211455); // 2^128 - 1
+    testSignedLEB128Roundtrip(170141183460469231731687303715884105727); // 2^127 - 1
+    testSignedLEB128Roundtrip(-170141183460469231731687303715884105728); // -2^127
+
+    // Arbitrary large values
+    testUnsignedLEB128Roundtrip(999999999999999999999999999999999999999);
+    testSignedLEB128Roundtrip(999999999999999999999999999999999999999);
+    testSignedLEB128Roundtrip(-999999999999999999999999999999999999999);
+  },
+);

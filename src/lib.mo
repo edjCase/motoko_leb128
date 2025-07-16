@@ -2,10 +2,6 @@ import Nat "mo:new-base/Nat";
 import Int "mo:new-base/Int";
 import Iter "mo:new-base/Iter";
 import Nat8 "mo:new-base/Nat8";
-import Nat16 "mo:new-base/Nat16";
-import Nat32 "mo:new-base/Nat32";
-import Nat64 "mo:new-base/Nat64";
-import Int64 "mo:new-base/Int64";
 import Result "mo:new-base/Result";
 import Buffer "mo:base/Buffer";
 
@@ -18,17 +14,21 @@ module {
     /// let ?value = LEB128.fromUnsignedBytes(bytes.vals()); // Returns: 300
     /// ```
     public func fromUnsignedBytes(bytes : Iter.Iter<Nat8>) : Result.Result<Nat, Text> {
-        var result : Nat64 = 0;
-        var shift : Nat64 = 0;
+        var result : Nat = 0;
+        var shift : Nat = 0;
         var bytesRead = 0;
 
         for (byte in bytes) {
-            let byte32 = Nat64.fromNat(Nat8.toNat(byte));
-            result := result + ((byte32 % 128) << shift);
+            let byteValue = Nat8.toNat(byte);
+            let dataBits = byteValue % 128; // Get lower 7 bits
+
+            // Add this byte's contribution: dataBits * (2^shift)
+            let contribution = dataBits * (2 ** shift);
+            result := result + contribution;
             bytesRead += 1;
 
-            if (byte32 < 128) {
-                return #ok(Nat64.toNat(result));
+            if (byteValue < 128) {
+                return #ok(result);
             };
             shift += 7;
         };
@@ -42,23 +42,30 @@ module {
     /// let ?value = LEB128.fromSignedBytes(bytes.vals()); // Returns: -1
     /// ```
     public func fromSignedBytes(bytes : Iter.Iter<Nat8>) : Result.Result<Int, Text> {
-        var result : Int64 = 0;
-        var shift : Int64 = 0;
+        var result : Int = 0;
+        var shift : Nat = 0;
         var bytesRead = 0;
         var byte : Nat8 = 0;
 
         for (b in bytes) {
             byte := b;
-            let byte64 = Int64.fromNat64(Nat64.fromNat(Nat8.toNat(byte)));
-            result := result + ((byte64 % 128) << shift);
+            let byteValue = Nat8.toNat(byte);
+            let dataBits = byteValue % 128; // Get lower 7 bits
+
+            // Add this byte's contribution: dataBits * (2^shift)
+            let contribution = dataBits * (2 ** shift);
+            result := result + contribution;
             bytesRead += 1;
 
             if (byte < 128) {
-                // Sign extend if the sign bit is set
-                if (shift < 64 and (byte & 0x40) != 0) {
-                    result := result | ((-1 : Int64) << (shift + 7));
+                // Last byte - check if sign extension needed
+                if (dataBits >= 64) {
+                    // Bit 6 set means negative
+                    // Sign extend: subtract 2^(shift+7) to make negative
+                    let signExtension = 2 ** (shift + 7);
+                    result := result - signExtension;
                 };
-                return #ok(Int64.toInt(result));
+                return #ok(result);
             };
             shift += 7;
         };
@@ -107,6 +114,7 @@ module {
     };
 
     /// Encodes a signed integer as a variable-length integer into a buffer.
+    /// Works with infinite precision integers.
     ///
     /// ```motoko
     /// let buffer = Buffer.Buffer<Nat8>(10);
@@ -114,22 +122,32 @@ module {
     /// // buffer now contains: [0x7F]
     /// ```
     public func toSignedBytesBuffer(buffer : Buffer.Buffer<Nat8>, n : Int) {
-        var value = Int64.fromInt(n);
-
-        func nat64To8(value : Nat64) : Nat8 = Nat8.fromNat16(Nat16.fromNat32(Nat32.fromNat64(value)));
+        var value = n;
 
         label w while (true) {
-            let byte = value & 0x7F; // Get the 7 least significant bits
-            let byteNat = if (byte >= 0) Int64.toNat64(byte) else Int64.toNat64(byte + 128);
-            value := Int64.bitshiftRight(value, 7);
+            // Get the 7 least significant bits
+            var byte = value % 128;
+            if (byte < 0) {
+                byte := byte + 128; // Handle negative modulo
+            };
+
+            // Arithmetic right shift by 7 bits (floor division)
+            value := if (value >= 0) {
+                value / 128;
+            } else {
+                (value - 127) / 128 // Proper arithmetic right shift for negative
+            };
+
             // Check if this is the last byte
-            if ((value == 0 and (byteNat & 0x40) == 0) or (value == -1 and (byteNat & 0x40) != 0)) {
+            // For positive: value == 0 and bit 6 clear (byte < 64)
+            // For negative: value == -1 and bit 6 set (byte >= 64)
+            if ((value == 0 and byte < 64) or (value == -1 and byte >= 64)) {
                 // Last byte - no continuation bit
-                buffer.add(nat64To8(byteNat));
+                buffer.add(Nat8.fromNat(Int.abs(byte)));
                 break w;
             } else {
                 // Not last byte - add continuation bit
-                buffer.add(nat64To8(byteNat | 0x80));
+                buffer.add(Nat8.fromNat(Int.abs(byte + 128)));
             };
         };
     };
