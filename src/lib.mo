@@ -115,22 +115,21 @@ module {
     /// ```
     public func toSignedBytesBuffer(buffer : Buffer.Buffer<Nat8>, n : Int) {
         var value = Int64.fromInt(n);
-        var more = true;
 
         func nat64To8(value : Nat64) : Nat8 = Nat8.fromNat16(Nat16.fromNat32(Nat32.fromNat64(value)));
 
-        while (more) {
-            let byte = Int64.toNat64(value % 128);
-            value := value / 128;
-
-            if ((value == 0 and (byte & 0x40) == 0) or (value == -1 and (byte & 0x40) != 0)) {
-                more := false;
+        label w while (true) {
+            let byte = value & 0x7F; // Get the 7 least significant bits
+            let byteNat = if (byte >= 0) Int64.toNat64(byte) else Int64.toNat64(byte + 128);
+            value := Int64.bitshiftRight(value, 7);
+            // Check if this is the last byte
+            if ((value == 0 and (byteNat & 0x40) == 0) or (value == -1 and (byteNat & 0x40) != 0)) {
+                // Last byte - no continuation bit
+                buffer.add(nat64To8(byteNat));
+                break w;
             } else {
-                buffer.add(nat64To8(byte | 0x80));
-            };
-
-            if (not more) {
-                buffer.add(nat64To8(byte));
+                // Not last byte - add continuation bit
+                buffer.add(nat64To8(byteNat | 0x80));
             };
         };
     };
