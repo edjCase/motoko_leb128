@@ -10,8 +10,8 @@ module {
     /// Decodes a variable-length integer from a byte iterator.
     ///
     /// ```motoko
-    /// let bytes : [Nat8] = [0xAC, 0x02]; // 300 encoded as varint
-    /// let ?value = VarInt.fromBytes(bytes.vals()); // Returns: 300
+    /// let bytes : [Nat8] = [0xAC, 0x02]; // 300 encoded as LEB128
+    /// let ?value = LEB128.fromBytes(bytes.vals()); // Returns: 300
     /// ```
     public func fromBytes(bytes : Iter.Iter<Nat8>) : Result.Result<Nat, Text> {
         var result : Nat64 = 0;
@@ -28,17 +28,17 @@ module {
             };
             shift += 7;
         };
-        #err("Unexpected end of bytes"); // Not enough bytes to complete varint
+        #err("Unexpected end of bytes"); // Not enough bytes to complete LEB128
     };
 
     /// Encodes a natural number as a variable-length integer.
     ///
     /// ```motoko
-    /// let encoded = VarInt.toBytes(300);
+    /// let encoded = LEB128.toBytes(300);
     /// // Returns: [0xAC, 0x02]
     /// ```
     public func toBytes(n : Nat) : [Nat8] {
-        let buffer = Buffer.Buffer<Nat8>(10); // 10 bytes is enough for any varint
+        let buffer = Buffer.Buffer<Nat8>(10); // 10 bytes is enough for any LEB128
         toBytesBuffer(buffer, n);
         Buffer.toArray(buffer);
     };
@@ -47,7 +47,7 @@ module {
     ///
     /// ```motoko
     /// let buffer = Buffer.Buffer<Nat8>(10);
-    /// VarInt.toBytesBuffer(buffer, 300);
+    /// LEB128.toBytesBuffer(buffer, 300);
     /// // buffer now contains: [0xAC, 0x02]
     /// ```
     public func toBytesBuffer(buffer : Buffer.Buffer<Nat8>, n : Nat) {
