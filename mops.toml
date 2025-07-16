@@ -1,9 +1,9 @@
 [package]
-name = ""
+name = "leb128"
 version = "0.0.1"
-description = ""
-repository = "https://github.com/edjcase/"
-keywords = [ ]
+description = "A motoko library for encoding and decoding LEB128 integers."
+repository = "https://github.com/edjcase/motoko_leb128"
+keywords = ["leb128", "encode", "sleb128", "uleb128"]
 license = "MIT"
 
 [dependencies]
