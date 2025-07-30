@@ -1,7 +1,7 @@
-import LEB128 "../src"; // Adjust path to your multiformats module
-import Debug "mo:base/Debug";
+import LEB128 "../src";
 import { test } "mo:test";
-import Blob "mo:new-base/Blob";
+import Blob "mo:core/Blob";
+import Runtime "mo:core/Runtime";
 
 // =============================================================================
 // Unsigned Test Functions
@@ -23,7 +23,7 @@ func testUnsignedLEB128Encoding(
   let actualBytes = Blob.fromArray(LEB128.toUnsignedBytes(value));
 
   if (actualBytes != expectedBytes) {
-    Debug.trap(
+    Runtime.trap(
       "Unsigned LEB128 encoding mismatch for " # debug_show (value) #
       "\nExpected: " # debug_show (expectedBytes) #
       "\nActual:   " # debug_show (actualBytes)
@@ -37,11 +37,11 @@ func testUnsignedLEB128Decoding(
 ) {
   let actualValue = switch (LEB128.fromUnsignedBytes(bytes.vals())) {
     case (#ok(value)) value;
-    case (#err(err)) Debug.trap("Unsigned LEB128 decoding failed for: " # debug_show (bytes) # "\nError: " # err);
+    case (#err(err)) Runtime.trap("Unsigned LEB128 decoding failed for: " # debug_show (bytes) # "\nError: " # err);
   };
 
   if (actualValue != expectedValue) {
-    Debug.trap(
+    Runtime.trap(
       "Unsigned LEB128 decoding mismatch for " # debug_show (bytes) #
       "\nExpected: " # debug_show (expectedValue) #
       "\nActual:   " # debug_show (actualValue)
@@ -53,11 +53,11 @@ func testUnsignedLEB128Roundtrip(value : Nat) {
   let encoded = LEB128.toUnsignedBytes(value);
   let decoded = switch (LEB128.fromUnsignedBytes(encoded.vals())) {
     case (#ok(value)) value;
-    case (#err(err)) Debug.trap("Unsigned round-trip decode failed for: " # debug_show (value) # "\nError: " # err);
+    case (#err(err)) Runtime.trap("Unsigned round-trip decode failed for: " # debug_show (value) # "\nError: " # err);
   };
 
   if (decoded != value) {
-    Debug.trap(
+    Runtime.trap(
       "Unsigned LEB128 round-trip mismatch for " # debug_show (value) #
       "\nOriginal: " # debug_show (value) #
       "\nDecoded:  " # debug_show (decoded)
@@ -85,7 +85,7 @@ func testSignedLEB128Encoding(
   let actualBytes = Blob.fromArray(LEB128.toSignedBytes(value));
 
   if (actualBytes != expectedBytes) {
-    Debug.trap(
+    Runtime.trap(
       "Signed LEB128 encoding mismatch for " # debug_show (value) #
       "\nExpected: " # debug_show (expectedBytes) #
       "\nActual:   " # debug_show (actualBytes)
@@ -99,11 +99,11 @@ func testSignedLEB128Decoding(
 ) {
   let actualValue = switch (LEB128.fromSignedBytes(bytes.vals())) {
     case (#ok(value)) value;
-    case (#err(err)) Debug.trap("Signed LEB128 decoding failed for: " # debug_show (bytes) # "\nError: " # err);
+    case (#err(err)) Runtime.trap("Signed LEB128 decoding failed for: " # debug_show (bytes) # "\nError: " # err);
   };
 
   if (actualValue != expectedValue) {
-    Debug.trap(
+    Runtime.trap(
       "Signed LEB128 decoding mismatch for " # debug_show (bytes) #
       "\nExpected: " # debug_show (expectedValue) #
       "\nActual:   " # debug_show (actualValue)
@@ -115,11 +115,11 @@ func testSignedLEB128Roundtrip(value : Int) {
   let encoded = LEB128.toSignedBytes(value);
   let decoded = switch (LEB128.fromSignedBytes(encoded.vals())) {
     case (#ok(value)) value;
-    case (#err(err)) Debug.trap("Signed round-trip decode failed for: " # debug_show (value) # "\nError: " # err);
+    case (#err(err)) Runtime.trap("Signed round-trip decode failed for: " # debug_show (value) # "\nError: " # err);
   };
 
   if (decoded != value) {
-    Debug.trap(
+    Runtime.trap(
       "Signed LEB128 round-trip mismatch for " # debug_show (value) #
       "\nOriginal: " # debug_show (value) #
       "\nDecoded:  " # debug_show (decoded)
@@ -133,14 +133,14 @@ func testSignedLEB128Roundtrip(value : Int) {
 
 func testUnsignedLEB128Error(invalidBytes : Blob) {
   switch (LEB128.fromUnsignedBytes(invalidBytes.vals())) {
-    case (#ok(value)) Debug.trap("Expected unsigned LEB128 decode error for " # debug_show (invalidBytes) # " but got: " # debug_show (value));
+    case (#ok(value)) Runtime.trap("Expected unsigned LEB128 decode error for " # debug_show (invalidBytes) # " but got: " # debug_show (value));
     case (#err(_)) {}; // Expected error
   };
 };
 
 func testSignedLEB128Error(invalidBytes : Blob) {
   switch (LEB128.fromSignedBytes(invalidBytes.vals())) {
-    case (#ok(value)) Debug.trap("Expected signed LEB128 decode error for " # debug_show (invalidBytes) # " but got: " # debug_show (value));
+    case (#ok(value)) Runtime.trap("Expected signed LEB128 decode error for " # debug_show (invalidBytes) # " but got: " # debug_show (value));
     case (#err(_)) {}; // Expected error
   };
 };

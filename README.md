@@ -21,7 +21,7 @@ To set up MOPS package manager, follow the instructions from the [MOPS Site](htt
 
 ```motoko
 import LEB128 "mo:leb128";
-import Debug "mo:base/Debug";
+import Debug "mo:core/Debug";
 
 // Encode a number as unsigned LEB128
 let value = 300;
@@ -37,8 +37,8 @@ Debug.print(debug_show(sha256)); // Output: [18]
 
 ```motoko
 import LEB128 "mo:leb128";
-import Result "mo:new-base/Result";
-import Debug "mo:base/Debug";
+import Result "mo:core/Result";
+import Debug "mo:core/Debug";
 
 // Decode unsigned LEB128 bytes
 let bytes : [Nat8] = [172, 2]; // 300 encoded
@@ -58,7 +58,7 @@ switch (result) {
 
 ```motoko
 import LEB128 "mo:leb128";
-import Debug "mo:base/Debug";
+import Debug "mo:core/Debug";
 
 // Encode positive and negative numbers
 let positive = LEB128.toSignedBytes(127);
@@ -75,8 +75,8 @@ Debug.print(debug_show(zero)); // Output: [0]
 
 ```motoko
 import LEB128 "mo:leb128";
-import Result "mo:new-base/Result";
-import Debug "mo:base/Debug";
+import Result "mo:core/Result";
+import Debug "mo:core/Debug";
 
 // Decode signed LEB128 bytes
 let negativeBytes : [Nat8] = [127]; // -1 encoded
@@ -96,10 +96,11 @@ switch (result) {
 
 ```motoko
 import LEB128 "mo:leb128";
-import Buffer "mo:base/Buffer";
+import Buffer "mo:buffer";
 
 // Encode multiple values into a single buffer
-let buffer = Buffer.Buffer<Nat8>(20);
+let list = List.empty<Nat8>();
+let buffer = Buffer.fromList(list);
 
 // Add multiple LEB128 encoded values
 LEB128.toUnsignedBytesBuffer(buffer, 300);
@@ -110,7 +111,7 @@ LEB128.toSignedBytesBuffer(buffer, -64);
 
 ```motoko
 import LEB128 "mo:leb128";
-import Debug "mo:base/Debug";
+import Debug "mo:core/Debug";
 
 // Works with arbitrarily large numbers
 let largeNumber = 123456789012345678901234567890;

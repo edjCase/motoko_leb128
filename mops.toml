@@ -1,14 +1,14 @@
 [package]
 name = "leb128"
-version = "0.0.2"
+version = "1.0.0"
 description = "A motoko library for encoding and decoding LEB128 integers."
 repository = "https://github.com/edjcase/motoko_leb128"
 keywords = ["leb128", "encode", "sleb128", "uleb128"]
 license = "MIT"
 
 [dependencies]
-base = "0.14.9"
-new-base = "0.4.0"
+core = "0.6.0"
+buffer = "0.0.1"
 
 [dev-dependencies]
 test = "2.1.1"
