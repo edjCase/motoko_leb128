@@ -1,7 +1,7 @@
 import LEB128 "../src";
 import { test } "mo:test";
-import Blob "mo:core/Blob";
-import Runtime "mo:core/Runtime";
+import Blob "mo:core@1/Blob";
+import Runtime "mo:core@1/Runtime";
 
 // =============================================================================
 // Unsigned Test Functions

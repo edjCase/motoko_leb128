@@ -1,10 +1,10 @@
-import Nat "mo:core/Nat";
-import Int "mo:core/Int";
-import Iter "mo:core/Iter";
-import Nat8 "mo:core/Nat8";
-import Result "mo:core/Result";
-import List "mo:core/List";
-import Buffer "mo:buffer";
+import Nat "mo:core@1/Nat";
+import Int "mo:core@1/Int";
+import Iter "mo:core@1/Iter";
+import Nat8 "mo:core@1/Nat8";
+import Result "mo:core@1/Result";
+import List "mo:core@1/List";
+import Buffer "mo:buffer@0";
 
 module {
 
